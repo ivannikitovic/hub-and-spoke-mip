@@ -34,18 +34,22 @@ for index, row in packages_df.iterrows():
     flows[origin, destination] = row['packages']
 
 alpha = 0.75  # Discount factor
-K = 3  # Number of hubs
+K = 10  # Number of hubs
 
 # Create a new model
 m = gp.Model("hub_and_spoke")
 
 # Decision Variables
 x = m.addMVar((N, N), vtype=GRB.BINARY, name="x")
-y = m.addMVar((N, N), vtype=GRB.BINARY, name="y")
+h = m.addMVar(N, vtype=GRB.BINARY, name="h")
 
 # Objective Function
-obj = sum(flows[i, j] * (distances[i, k] * x[i, k] + alpha * distances[k, l] * y[k, l] + distances[l, j] * x[l, j])
+obj = sum(flows[i, j] * x[i, k] * x[j, l] * 
+                        (distances[i, k] + 
+                        alpha * distances[k, l] + 
+                        distances[l, j])
           for i in range(N) for j in range(N) for k in range(N) for l in range(N))
+
 m.setObjective(obj, GRB.MINIMIZE)
 
 # Constraints
@@ -53,40 +57,32 @@ for i in range(N):
     m.addConstr(sum(x[i, j] for j in range(N)) == 1)
 
 for i in range(N):
-    for j in range(N):
-        m.addConstr(x[i, j] <= x[j, j])
-        
-m.addConstr(sum(x[i, i] for i in range(N)) == K)
+    for k in range(N):
+        m.addConstr(x[i, k] <= h[k])
 
-for i in range(N):
-    for j in range(N):
-        if i != j:
-            m.addConstr(y[i, j] <= x[i, i])
-            m.addConstr(y[i, j] <= x[j, j])
+m.addConstr(h.sum() == K)
 
 # Optimize model
 m.optimize()
 
 if m.status == GRB.OPTIMAL:
     x_sol = x.X
-    y_sol = y.X
+    h_sol = h.X
     print("Optimal solution found!")
     print(f"Objective value:         {m.ObjVal}")
 
     point_to_point_distance = np.sum(flows * distances)
-
     print(f"Point-to-Point Distance: {point_to_point_distance}")
 
-    
     print("\nChosen hubs (in city indices):")
-    for i in range(N):
-        if x_sol[i, i] > 0.5:
-            print(i)
+    for k in range(N):
+        if h_sol[k] > 0.5:
+            print(k)
             
     print("\nRoutes:")
     for i in range(N):
-        for j in range(N):
-            if x_sol[i, j] > 0.5 and i != j:
-                print(f"City {i} -> Hub {j}")
+        for k in range(N):
+            if x_sol[i, k] > 0.5 and h_sol[k] > 0.5:
+                print(f"City {i} -> Hub {k}")
 else:
     print("No solution found!")
