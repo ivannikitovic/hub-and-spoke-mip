@@ -34,10 +34,11 @@ for index, row in packages_df.iterrows():
     flows[origin, destination] = row['packages']
 
 alpha = 0.75  # Discount factor
-K = 10  # Number of hubs
+K = 3 # Number of hubs
 
 # Create a new model
 m = gp.Model("hub_and_spoke")
+m.setParam(GRB.Param.TimeLimit, 600)  # seconds
 
 # Decision Variables
 x = m.addMVar((N, N), vtype=GRB.BINARY, name="x")
@@ -65,10 +66,12 @@ m.addConstr(h.sum() == K)
 # Optimize model
 m.optimize()
 
-if m.status == GRB.OPTIMAL:
+m.write("k_3_a_75.sol")
+
+# if solution available, print
+if m.status == 2 or m.status >= 7:
     x_sol = x.X
     h_sol = h.X
-    print("Optimal solution found!")
     print(f"Objective value:         {m.ObjVal}")
 
     point_to_point_distance = np.sum(flows * distances)
