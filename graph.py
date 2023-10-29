@@ -3,24 +3,14 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from data_loader import load_solution
+
 # Hyperparameters
 solution_file = "output/k_4_a_75.sol"
 cities_file = "data/cities_small.csv"
 
 # 1. Extract data from example.sol
-hubs = {}
-connections = []
-with open(solution_file, 'r') as file:
-    for line in file:
-        if line.startswith("h["):
-            node, val = line.split()
-            node_idx = int(node.split('[')[1].split(']')[0])
-            hubs[node_idx] = int(val)
-        elif line.startswith("x["):
-            nodes, val = line.split()
-            start_node, end_node = [int(idx) for idx in nodes.split('[')[1].split(']')[0].split(',')]
-            if int(val) == 1:
-                connections.append((start_node, end_node))
+hubs, connections = load_solution(solution_file)
 
 # 2. Extract data from .csv file
 df = pd.read_csv(cities_file)

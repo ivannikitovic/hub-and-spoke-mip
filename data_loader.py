@@ -27,3 +27,21 @@ def load_data(city_file, package_file):
         flows[origin, destination] = row['packages']
 
     return N, flows, distances
+
+
+def load_solution(solution_file):
+    hubs = {}
+    connections = []
+    with open(solution_file, 'r') as file:
+        for line in file:
+            if line.startswith("h["):
+                node, val = line.split()
+                node_idx = int(node.split('[')[1].split(']')[0])
+                hubs[node_idx] = int(val)
+            elif line.startswith("x["):
+                nodes, val = line.split()
+                start_node, end_node = [int(idx) for idx in nodes.split('[')[1].split(']')[0].split(',')]
+                if int(val) == 1:
+                    connections.append((start_node, end_node))
+
+    return hubs, connections
