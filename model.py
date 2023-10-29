@@ -3,42 +3,23 @@
 import gurobipy as gp
 from gurobipy import GRB
 
-from math import sqrt
 import numpy as np
-import scipy.sparse as sp
-import pandas as pd
+from data_loader import load_data
 
+# Set hyperparameters
+cities_file = "data/cities_small.csv"
+packages_file = "data/packages_small.csv"
+output_dir = "output"
+TIMEOUT = 600  # seconds
+ALPHA = 0.75  # Discount factor
+K = 2 # Number of hubs
 
 # Load the data
-cities_df = pd.read_csv("data/cities_small.csv")
-packages_df = pd.read_csv("data/packages_small.csv")
-
-N = len(cities_df)
-
-
-def euclidean_distance(lat1, lon1, lat2, lon2):
-    return sqrt((lon2 - lon1)**2 + (lat2 - lat1)**2)
-
-
-distances = np.zeros((N, N))
-for i in range(N):
-    for j in range(N):
-        lat1, lon1 = cities_df.iloc[i][['lat', 'lon']]
-        lat2, lon2 = cities_df.iloc[j][['lat', 'lon']]
-        distances[i, j] = euclidean_distance(lat1, lon1, lat2, lon2)
-
-flows = np.zeros((N, N))
-for index, row in packages_df.iterrows():
-    origin = row['origin']
-    destination = row['destination']
-    flows[origin, destination] = row['packages']
-
-alpha = 0.75  # Discount factor
-K = 3 # Number of hubs
+N, flows, distances = load_data(cities_file, packages_file)
 
 # Create a new model
 m = gp.Model("hub_and_spoke")
-m.setParam(GRB.Param.TimeLimit, 600)  # seconds
+m.setParam(GRB.Param.TimeLimit, TIMEOUT)  # seconds
 
 # Decision Variables
 x = m.addMVar((N, N), vtype=GRB.BINARY, name="x")
@@ -47,7 +28,7 @@ h = m.addMVar(N, vtype=GRB.BINARY, name="h")
 # Objective Function
 obj = sum(flows[i, j] * x[i, k] * x[j, l] * 
                         (distances[i, k] + 
-                        alpha * distances[k, l] + 
+                        ALPHA * distances[k, l] + 
                         distances[l, j])
           for i in range(N) for j in range(N) for k in range(N) for l in range(N))
 
@@ -66,7 +47,8 @@ m.addConstr(h.sum() == K)
 # Optimize model
 m.optimize()
 
-m.write("k_3_a_75.sol")
+output_name = f"k_{K}_a_{int(ALPHA*100)}.sol"
+m.write(f"{output_dir}/{output_name}")
 
 # if solution available, print
 if m.status == 2 or m.status >= 7:
