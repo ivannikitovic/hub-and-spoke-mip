@@ -10,9 +10,9 @@ from data_loader import load_data
 cities_file = "data/cities_small.csv"
 packages_file = "data/packages_small.csv"
 output_dir = "output"
-TIMEOUT = 600  # seconds
+TIMEOUT = 3600  # seconds
 ALPHA = 0.75  # Discount factor
-K = 2 # Number of hubs
+K = 6 # Number of hubs
 
 # Load the data
 N, flows, distances = load_data(cities_file, packages_file)

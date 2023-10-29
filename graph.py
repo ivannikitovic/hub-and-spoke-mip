@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # Hyperparameters
-solution_file = "output/k_2_a_75.sol"
+solution_file = "output/k_4_a_75.sol"
 cities_file = "data/cities_small.csv"
 
 # 1. Extract data from example.sol
@@ -39,6 +39,13 @@ for connection in connections:
     start = df.loc[connection[0]]
     end = df.loc[connection[1]]
     plt.plot([start['lon'], end['lon']], [start['lat'], end['lat']], 'r-')
+
+for i in range(len(hubs)):
+    for j in range(i+1, len(hubs)):
+        if hubs[i] == 1 and hubs[j] == 1:
+            start = df.loc[i]
+            end = df.loc[j]
+            plt.plot([start['lon'], end['lon']], [start['lat'], end['lat']], 'b-', alpha=0.5)
 
 # Add dummy points for legend
 plt.scatter([], [], c='g', marker='*', s=150, label='Hub Node')
