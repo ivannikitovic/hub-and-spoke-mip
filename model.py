@@ -6,7 +6,7 @@ from gurobipy import GRB
 import numpy as np
 from data_loader import load_data
 
-# Set hyperparameters
+# Hyperparameters
 cities_file = "data/cities_small.csv"
 packages_file = "data/packages_small.csv"
 output_dir = "output"
