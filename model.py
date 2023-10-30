@@ -12,7 +12,10 @@ packages_file = "data/packages_small.csv"
 output_dir = "output"
 TIMEOUT = 3600  # seconds
 ALPHA = 0.75  # Discount factor
-K = 6 # Number of hubs
+K = 2 # Number of hubs
+
+overhead = True
+C = 0  # Cost per package
 
 # Load the data
 N, flows, distances = load_data(cities_file, packages_file)
@@ -32,7 +35,16 @@ obj = sum(flows[i, j] * x[i, k] * x[j, l] *
                         distances[l, j])
           for i in range(N) for j in range(N) for k in range(N) for l in range(N))
 
-m.setObjective(obj, GRB.MINIMIZE)
+overhead_cost = sum(
+    flows[i, j] * x[i, k] * x[j, l] * C
+    for i in range(N) for j in range(N) for k in range(N) for l in range(N)
+    if k != l
+)
+
+if overhead:
+    m.setObjective(obj + overhead_cost, GRB.MINIMIZE)
+else:
+    m.setObjective(obj, GRB.MINIMIZE)
 
 # Constraints
 for i in range(N):
@@ -47,7 +59,10 @@ m.addConstr(h.sum() == K)
 # Optimize model
 m.optimize()
 
-output_name = f"k_{K}_a_{int(ALPHA*100)}.sol"
+if overhead:
+    output_name = f"k_{K}_a_{int(ALPHA*100)}_c_{C}.sol"
+else:
+    output_name = f"k_{K}_a_{int(ALPHA*100)}.sol"
 m.write(f"{output_dir}/{output_name}")
 
 # if solution available, print
