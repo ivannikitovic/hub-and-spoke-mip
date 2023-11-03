@@ -38,7 +38,7 @@ obj = sum(flows[i, j] * x[i, k] * x[j, l] *
 overhead_cost = sum(
     flows[i, j] * x[i, k] * x[j, l] * C
     for i in range(N) for j in range(N) for k in range(N) for l in range(N)
-    if k != l
+    if k != l and i != k and j != l
 )
 
 if overhead:

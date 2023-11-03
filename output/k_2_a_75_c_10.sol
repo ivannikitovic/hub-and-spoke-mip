@@ -1,5 +1,5 @@
 # Solution for model hub_and_spoke
-# Objective value = 1.5428350148177849e+07
+# Objective value = 1.4862870148177851e+07
 x[0,0] 0
 x[0,1] 0
 x[0,2] 0
