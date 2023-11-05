@@ -1,5 +1,7 @@
 # FreshFarm Delivery Network Optimization
 
+[Final Report (PDF)](<hub_and_spoke.pdf>)
+
 FreshFarm, a company specializing in perishable farm product delivery across a vast network of *N* cities, faces the critical challenge of ensuring the swift and efficient transportation of these perishable goods. Given the limited shelf life of their products and the necessity to reach customers across the entire country, FreshFarm is contemplating the implementation of a hub-and-spoke network model.
 
 ## Network Configurations
